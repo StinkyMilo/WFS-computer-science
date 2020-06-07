@@ -1,7 +1,7 @@
 number = int(input("Enter length:\n"))
 def fib(x):
     # We're starting with a 1 already there to make formatting easier. Therefore, if we're asked for 0 digits, we need to make an exception
-    if x == 0:
+    if x <= 0:
         return ""
     string = "1"
     num = 1
