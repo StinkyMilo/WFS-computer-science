@@ -108,4 +108,3 @@ def simulate_matches(ai_1,ai_2,match_count=1):
             ties+=1
     return wins_1, wins_2, ties
 
-
