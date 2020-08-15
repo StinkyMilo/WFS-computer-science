@@ -12,5 +12,6 @@ def fib(x):
         # Sets the current number to be itself plus the previous, and then sets the new previous
         old_num,num = num,old_num+num
     return string
+
+
 print(fib(number))
-        
