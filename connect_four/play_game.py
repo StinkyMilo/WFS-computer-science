@@ -7,6 +7,7 @@ GRAVITY = 0.01
 pygame.init()
 pygame.font.init()
 font = pygame.font.SysFont(None, 48)
+clock = pygame.time.Clock()
 def draw_board(screen,board):
     pygame.draw.rect(screen, (50, 50, 255), (20, 50, 360, 280))
     for i in range(0,len(board)):
@@ -34,7 +35,7 @@ def animate_move(screen,board,move,team,stage):
     return y==dest
 
 
-def play_pygame_ai(p1ai, p2ai,max_wait_frames=20):
+def play_pygame_ai(p1ai, p2ai,fps=500):
     pygame.display.set_caption("Connect 4")
     screen = pygame.display.set_mode((400,400))
     running = True
@@ -45,9 +46,9 @@ def play_pygame_ai(p1ai, p2ai,max_wait_frames=20):
     move_completed = False
     turn = 1
     time = 0
-    wait_frames=0
     winner = -1
     while running:
+        clock.tick(fps)
         for event in pygame.event.get():
             if event.type==pygame.QUIT:
                 running = False
@@ -65,12 +66,8 @@ def play_pygame_ai(p1ai, p2ai,max_wait_frames=20):
             screen.blit(text,(int(200-text_width/2),150))
             pygame.display.update()
         else:
-            if wait_frames<=0:
-                move_completed = animate_move(screen,board,pending_move,turn,time)
-                time+=1
-            else:
-                draw_board(screen,board)
-                wait_frames-=1
+            move_completed = animate_move(screen, board, pending_move, turn, time)
+            time += 1
             pygame.display.flip()
             if move_completed:
                 board, _ = game.make_move(board, pending_move, turn)
@@ -85,16 +82,130 @@ def play_pygame_ai(p1ai, p2ai,max_wait_frames=20):
                     elif turn==2:
                         turn=1
                         pending_move = p1.make_move(board)
-                    wait_frames=max_wait_frames
+                    if pending_move != -1 and not game.is_valid_move(board,pending_move):
+                        print(pending_move)
+                        winner = 2 if turn == 1 else 1
                     move_completed=False
 
 
-def play_pygame_players():
-    pass
+def to_screen(x,y):
+    return int(45+x*360/7), int(300-y*300/7)
 
 
-def play_pygame_1ai(ai):
-    pass
+def play_pygame_players(fps=500):
+    pygame.display.set_caption("Connect 4")
+    screen = pygame.display.set_mode((400, 400))
+    running = True
+    board = game.initialize_board()
+    pending_move = -1
+    turn = 1
+    time = 0
+    winner = -1
+    while running:
+        tick = clock.tick(fps)
+        for event in pygame.event.get():
+            if event.type==pygame.QUIT:
+                running = False
+        screen.fill((255, 255, 255))
+        if winner != -1:
+            if winner==1:
+                text = "Red Wins"
+            elif winner==2:
+                text = "Black Wins"
+            else:
+                text = "It's a Tie"
+            text = font.render(text,True,(100,150,150))
+            text_width = text.get_rect().width
+            draw_board(screen, board)
+            screen.blit(text,(int(200-text_width/2),150))
+            pygame.display.update()
+        elif pending_move==-1:
+            draw_board(screen,board)
+            selected_slot = -1
+            mp = pygame.mouse.get_pos()
+            if 0 < mp[1] < 400:
+                for i in range(0,7):
+                    if 25+i*360/7 <= mp[0] <= 65+i*360/7:
+                        if game.get_y_of(board,i)==-1:
+                            break
+                        selected_slot = i
+                        pos = to_screen(i,game.get_y_of(board,i))
+                        pygame.draw.circle(screen,(255,255,0),pos,20)
+                        pygame.draw.circle(screen, (255, 255, 255), pos, 14)
+                        break
+            if pygame.mouse.get_pressed()[0] and selected_slot != -1:
+                pending_move = selected_slot
+            pygame.display.flip()
+        else:
+            done = animate_move(screen,board,pending_move,turn,time)
+            time+=1
+            if done:
+                board, _ = game.make_move(board,pending_move,turn)
+                winner = game.check_game_end(board)
+                pending_move=-1
+                turn = 1 if turn==2 else 2
+                time=0
+            pygame.display.flip()
+
+def play_pygame_1ai(ai,ai_turn=1,fps=500):
+    pygame.display.set_caption("Connect 4")
+    screen = pygame.display.set_mode((400, 400))
+    running = True
+    board = game.initialize_board()
+    pending_move = -1
+    turn = ai_turn
+    time = 0
+    ai = ai(ai_turn)
+    winner = -1
+    if ai_turn==1:
+        pending_move = ai.make_move(board)
+    while running:
+        tick = clock.tick(fps)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        screen.fill((255, 255, 255))
+        if winner != -1:
+            if winner == 1:
+                text = "Red Wins"
+            elif winner == 2:
+                text = "Black Wins"
+            else:
+                text = "It's a Tie"
+            text = font.render(text, True, (100, 150, 150))
+            text_width = text.get_rect().width
+            draw_board(screen, board)
+            screen.blit(text, (int(200 - text_width / 2), 150))
+            pygame.display.update()
+        elif pending_move == -1:
+            draw_board(screen, board)
+            selected_slot = -1
+            mp = pygame.mouse.get_pos()
+            if 0 < mp[1] < 400:
+                for i in range(0, 7):
+                    if 25 + i * 360 / 7 <= mp[0] <= 65 + i * 360 / 7:
+                        if game.get_y_of(board, i) == -1:
+                            break
+                        selected_slot = i
+                        pos = to_screen(i, game.get_y_of(board, i))
+                        pygame.draw.circle(screen, (255, 255, 0), pos, 20)
+                        pygame.draw.circle(screen, (255, 255, 255), pos, 14)
+                        break
+            if pygame.mouse.get_pressed()[0] and selected_slot != -1:
+                pending_move = selected_slot
+            pygame.display.flip()
+        else:
+            done = animate_move(screen, board, pending_move, turn, time)
+            time += 1
+            if done:
+                board, _ = game.make_move(board, pending_move, turn)
+                winner = game.check_game_end(board)
+                pending_move = -1
+                time = 0
+                turn = 1 if turn==2 else 2
+                if turn==ai_turn:
+                    pending_move=ai.make_move(board)
+            pygame.display.flip()
 
 
 def play_print(p1ai,p2ai,pause_after_p1=False,pause_after_p2=False):
@@ -108,7 +219,7 @@ def play_print(p1ai,p2ai,pause_after_p1=False,pause_after_p2=False):
         print("")
         if turn % 2 == 0:
             move = p1.make_move(board)
-            if move < 0 or move > 6 or game.get_y_of(board,move)==-1:
+            if not game.is_valid_move(board,move):
                 game_end = game.BLACK
                 print("Red attempted an invalid move.")
                 break
@@ -117,7 +228,7 @@ def play_print(p1ai,p2ai,pause_after_p1=False,pause_after_p2=False):
                 sleep(1)
         else:
             move = p2.make_move(board)
-            if move < 0 or move > 6 or game.get_y_of(board,move)==-1:
+            if not game.is_valid_move(board,move):
                 game_end=game.RED
                 print("Black attempted an invalid move.")
                 break

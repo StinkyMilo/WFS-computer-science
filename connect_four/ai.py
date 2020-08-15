@@ -42,28 +42,6 @@ class RandomPlayer(AI):
 game.ai_classes.append(RandomPlayer)
 
 
-class Straight(AI):
-    name = "Straight"
-
-    def __init__(self,team):
-        super().__init__(team)
-        self.name="Straight"
-    def get_other_team(team):
-        if(team==1):
-            return 2
-        else:
-            return 1
-        
-    def make_move(self,board):
-        other_team = get_other_team(team)
-        if in_row(board,other_team)==3:
-            
-        return 0
-
-
-game.ai_classes.append(Simp)
-
-
 # Here's what you edit
 class Template(AI):
     # Change "Template" to your AI's name

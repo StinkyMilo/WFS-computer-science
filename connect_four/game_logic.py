@@ -30,6 +30,10 @@ def get_y_of(board, move):
     return -1
 
 
+def is_valid_move(board, move):
+    return 0 <= move <= 6 and get_y_of(board, move) != -1
+
+
 def make_move(board, move, team):
     # Board is the initial position of the board.
     # Move is a number 0 through 6 that represents where the piece will go (left to right)
