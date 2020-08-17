@@ -20,11 +20,19 @@ def initialize_board():
 # Don't change this variable.
 EMPTY_BOARD = initialize_board()
 
+def pieces_on_board(board):
+    count=0
+    for row in board:
+        for value in row:
+            if value != 0:
+                count+=1
+    return count
+
 
 def get_y_of(board, move):
     # Returns the y location of a piece placed in location MOVE on board BOARD, so, where it will land when dropped. Bottom is 0, top is 6.
     # If the function returns -1, the column is full.
-    for y in range(0, BOARD_SIZE[1]):
+    for y in range(0, len(board)):
         if board[y][move]==EMPTY:
             return y
     return -1
@@ -40,7 +48,7 @@ def make_move(board, move, team):
     # Team is the piece that will be placed on the board, RED or BLACK
     # Function returns the board state after the move is made as well as a boolean representing whether the move was successful.
     new_board = deepcopy(board)
-    place_y = get_y_of(new_board,move)
+    place_y = get_y_of(board,move)
     if place_y==-1:
         return board, False
     new_board[place_y][move] = team

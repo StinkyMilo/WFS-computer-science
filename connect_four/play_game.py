@@ -260,6 +260,7 @@ def play_pygame_1ai(ai,ai_turn=1,fps=500):
                 time = 0
                 turn = 1 if turn==2 else 2
                 if turn==ai_turn:
+                    game.print_board(board)
                     pending_move=ai.make_move(board)
             pygame.display.flip()
 
@@ -367,6 +368,7 @@ def do_tournament(ai_list,match_count=20):
         matches_won = 0
         matches_played = 0
         for opponent in ai_list:
+            print("Playing Match " + ai.name + " vs " + opponent.name)
             results = simulate_matches(ai,opponent,match_count)
             game_stats[ai.name]["matches"][opponent.name] = {"results":(0,0,0),"replays":[]}
             game_stats[ai.name]["matches"][opponent.name]["results"] = results[0:3]
@@ -388,14 +390,14 @@ def do_tournament(ai_list,match_count=20):
 def display_tournament_results(results):
     # Results is result of do_tournament function
     # Page 1:
-    # Shows a grid of which ones won, hovering shows more specific stats
-    # Clicking will display a new game with the AI's playing each other.
+    # Shows a grid of which ones won. Clicking a cell opens a new page with the wins and losses of that match with general stats of the match.
+    # Can scroll and click any individual match to replay it.
     # Page 2:
-    # Shows each AI's stats individually. Clicking the AI will start a human game against it.
+    # Shows each AI's stats individually. Clicking the AI will start a human game against it. Can match it against any other AI for a new game.
     pass
 
 
-# ais_playing = [game.ai_classes[1],game.ai_classes[2]]
+# ais_playing = [game.ai_classes[1],game.ai_classes[2],game.ai_classes[3]]
 # open('output.json','w').write(json.dumps(do_tournament(ais_playing)))
 # game_json = json.loads(open('output.json','r').read())
 # replay_pygame(game_json["Random"]["matches"]["Random"]["replays"][0]["moves"])
