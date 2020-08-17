@@ -21,9 +21,6 @@ class InputPlayer(AI):
         return int(input("Make Move (0-6):\n"))
 
 
-game.ai_classes.append(InputPlayer)
-
-
 class RandomPlayer(AI):
     name = "Random"
 
@@ -122,6 +119,29 @@ class MinimaxD4(Minimax):
 
 
 game.ai_classes.append(MinimaxD4)
+
+class Sweeper(AI):
+    name = "Sweeper"
+
+    def __init__(self,team):
+        super().__init__(team)
+        self.location = randint(-1,5)
+        self.direction = 1
+
+    def make_move(self,board):
+        # This is where your logic will go. This default AI will always go in the leftmost column.
+        self.location+=self.direction
+        if game.check_game_end(board) != -1:
+            return 0
+        while game.get_y_of(board,self.location) == -1:
+            self.location+=self.direction
+        if self.location == 0 or self.location == 6:
+            self.direction*=-1
+        return self.location
+
+
+game.ai_classes.append(Sweeper)
+
 # Here's what you edit
 class Template(AI):
     # Change "Template" to your AI's name

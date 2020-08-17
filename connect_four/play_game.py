@@ -4,6 +4,7 @@ from time import sleep
 import game_logic as game
 import ai
 import json
+import xlsxwriter as excel
 GRAVITY = 0.01
 pygame.init()
 pygame.font.init()
@@ -84,7 +85,6 @@ def play_pygame_ai(p1ai, p2ai,fps=500):
                         turn=1
                         pending_move = p1.make_move(board)
                     if pending_move != -1 and not game.is_valid_move(board,pending_move):
-                        print(pending_move)
                         winner = 2 if turn == 1 else 1
                     move_completed=False
 
@@ -139,7 +139,6 @@ def replay_pygame(moves,fps=500):
                     else:
                         pending_move = moves[move_num]
                     if pending_move != -1 and not game.is_valid_move(board,pending_move):
-                        print(pending_move)
                         winner = 2 if turn == 1 else 1
                     move_completed=False
 
@@ -260,7 +259,6 @@ def play_pygame_1ai(ai,ai_turn=1,fps=500):
                 time = 0
                 turn = 1 if turn==2 else 2
                 if turn==ai_turn:
-                    game.print_board(board)
                     pending_move=ai.make_move(board)
             pygame.display.flip()
 
@@ -355,7 +353,7 @@ def simulate_matches(ai_1,ai_2,match_count=1):
     return wins_1, wins_2, ties, games
 
 # Code is made, figure out tournament
-def do_tournament(ai_list,match_count=20):
+def do_tournament(ai_list,match_count=10):
     # All AI's play each other, return dictionary of statistics. Other functions will display the statistics
     game_stats = {}
     for ai in ai_list:
@@ -387,17 +385,85 @@ def do_tournament(ai_list,match_count=20):
     return game_stats
 
 
-def display_tournament_results(results):
+def display_tournament_results(results,fps=500,output='tournament.xlsx',match_count=10):
     # Results is result of do_tournament function
     # Page 1:
-    # Shows a grid of which ones won. Clicking a cell opens a new page with the wins and losses of that match with general stats of the match.
-    # Can scroll and click any individual match to replay it.
+    # Shows a grid of which ones won and how many wins.
     # Page 2:
-    # Shows each AI's stats individually. Clicking the AI will start a human game against it. Can match it against any other AI for a new game.
+    # Shows each AI's stats individually.
+    # Page 3:
+    # Shows each Match Individually. (Winners, Game Arrays)
+    file = excel.Workbook(output)
+    grid = file.add_worksheet("Tournament Data")
+    ai_data = file.add_worksheet("AI Data")
+    match_data = file.add_worksheet("Match Data")
+    row = 1
+    num_dict = {}
+    ai_data.write(0,0,"AI")
+    ai_data.write(1,0,"Win Count")
+    ai_data.write(2,0,"Game Loss Count")
+    ai_data.write(3,0,"Tie Count")
+    ai_data.write(4, 0, "Matches Won")
+    ai_data.write(5,0,"Raw Win Rate")
+    ai_data.write(6,0,"Match Win Rate")
+    for name in results:
+        grid.write(row,0,name)
+        grid.write(0,row,name)
+        ai_data.write(0,row,name)
+        stats = results[name]["stats"]
+        ai_data.write(1,row,stats["raw_wins"])
+        ai_data.write(2,row,stats["raw_losses"])
+        ai_data.write(3,row,stats["raw_ties"])
+        ai_data.write(4,row,stats["matches_won"])
+        ai_data.write(5,row,stats["raw_win_rate"])
+        ai_data.write(6,row,stats["adjusted_win_rate"])
+
+        num_dict[name] = row
+        row+=1
+    match_col = 0
+    for name in results:
+        for match in results[name]["matches"]:
+            match_result = results[name]["matches"][match]["results"]
+            grid.write(num_dict[name],num_dict[match],match_result[0])
+            match_data.write(match_col,0,name + "(R) vs. " + match + "(B)")
+            match_data.write(match_col,1,name + "(R) wins")
+            match_data.write(match_col+1,1,match_result[0])
+            match_data.write(match_col,2,match+ "(B) wins")
+            match_data.write(match_col + 1, 2, match_result[1])
+            match_data.write(match_col,3,"Ties")
+            match_data.write(match_col + 1, 3, match_result[2])
+            match_data.write(match_col,4,"Match Winner")
+            winner = name
+            if match_result[1]>match_result[0]:
+                winner=match
+            elif match_result[0]==match_result[1]:
+                winner="Tie"
+            match_data.write(match_col+1,4,winner)
+            match_data.write(match_col+1,5,"Winner")
+            match_data.write(match_col + 2, 5, "Game Array")
+            games = results[name]["matches"][match]["replays"]
+            game_num = 0
+            for game in games:
+                match_data.write(match_col,6+game_num,"Game " + str(game_num+1))
+                winner = name + "(R)"
+                if game["winner"]==2:
+                    winner = match + "(B)"
+                elif game["winner"]==0:
+                    winner = "Tie"
+                match_data.write(match_col+1,6+game_num,winner)
+                match_data.write(match_col+2,6+game_num,str(game["moves"]))
+                game_num+=1
+            match_col+=5
+
+    file.close()
+
+
+def game_selection(ais):
+    # UI to select a game to play; two people, player vs AI, AI vs AI, or a game replay (input a string for that)
     pass
 
 
-# ais_playing = [game.ai_classes[1],game.ai_classes[2],game.ai_classes[3]]
-# open('output.json','w').write(json.dumps(do_tournament(ais_playing)))
+# open('output.json','w').write(json.dumps(do_tournament(game.ai_classes)))
 # game_json = json.loads(open('output.json','r').read())
 # replay_pygame(game_json["Random"]["matches"]["Random"]["replays"][0]["moves"])
+# display_tournament_results(json.loads(open('output.json','r').read()))
