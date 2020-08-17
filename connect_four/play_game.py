@@ -5,6 +5,7 @@ import game_logic as game
 import ai
 import json
 import xlsxwriter as excel
+from xlsxwriter.utility import xl_rowcol_to_cell
 GRAVITY = 0.01
 pygame.init()
 pygame.font.init()
@@ -385,7 +386,7 @@ def do_tournament(ai_list,match_count=10):
     return game_stats
 
 
-def display_tournament_results(results,fps=500,output='tournament.xlsx',match_count=10):
+def export_tournament_results(results,fps=500,output='tournament.xlsx'):
     # Results is result of do_tournament function
     # Page 1:
     # Shows a grid of which ones won and how many wins.
@@ -398,6 +399,9 @@ def display_tournament_results(results,fps=500,output='tournament.xlsx',match_co
     ai_data = file.add_worksheet("AI Data")
     match_data = file.add_worksheet("Match Data")
     row = 1
+    red = file.add_format({'bg_color':'red'})
+    black = file.add_format({'bg_color':'black','font_color':'white'})
+    grey = file.add_format({'bg_color':'gray'})
     num_dict = {}
     ai_data.write(0,0,"AI")
     ai_data.write(1,0,"Win Count")
@@ -417,14 +421,28 @@ def display_tournament_results(results,fps=500,output='tournament.xlsx',match_co
         ai_data.write(4,row,stats["matches_won"])
         ai_data.write(5,row,stats["raw_win_rate"])
         ai_data.write(6,row,stats["adjusted_win_rate"])
-
         num_dict[name] = row
         row+=1
+    row-=1
+    grid.set_column(0,row,9.5)
+    ai_data.set_column(0,0,15)
+    ai_data.set_column(1,row,9.5)
+    match_data.set_column(0,0,30)
+    match_data.set_column(1,2,15)
+
+    grid.conditional_format(1,1,row,row,{'type':'cell','criteria':'greater than','value':0,'format':red})
+    grid.conditional_format(1, 1, row, row,
+                            {'type': 'cell', 'criteria': 'less than', 'value': 0,
+                             'format': black})
+    grid.conditional_format(1, 1, row, row,
+                            {'type': 'cell', 'criteria': 'equal to', 'value': 0,
+                             'format': grey})
     match_col = 0
     for name in results:
         for match in results[name]["matches"]:
             match_result = results[name]["matches"][match]["results"]
-            grid.write(num_dict[name],num_dict[match],match_result[0])
+            grid.write_url(num_dict[name], num_dict[match], "internal:'Match Data'!" + xl_rowcol_to_cell(match_col, 0))
+            grid.write(num_dict[name],num_dict[match],match_result[0]-match_result[1])
             match_data.write(match_col,0,name + "(R) vs. " + match + "(B)")
             match_data.write(match_col,1,name + "(R) wins")
             match_data.write(match_col+1,1,match_result[0])
@@ -454,7 +472,7 @@ def display_tournament_results(results,fps=500,output='tournament.xlsx',match_co
                 match_data.write(match_col+2,6+game_num,str(game["moves"]))
                 game_num+=1
             match_col+=5
-
+    match_data.set_column(3,match_col,10)
     file.close()
 
 
