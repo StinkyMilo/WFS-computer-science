@@ -6,6 +6,8 @@ import ai
 import json
 import xlsxwriter as excel
 from xlsxwriter.utility import xl_rowcol_to_cell
+import tkinter as tk
+from tkinter import simpledialog as sd
 GRAVITY = 0.01
 pygame.init()
 pygame.font.init()
@@ -162,6 +164,7 @@ def play_pygame_players(fps=500):
         for event in pygame.event.get():
             if event.type==pygame.QUIT:
                 running = False
+                break
         screen.fill((255, 255, 255))
         if winner != -1:
             if winner==1:
@@ -476,10 +479,57 @@ def export_tournament_results(results,fps=500,output='tournament.xlsx'):
     file.close()
 
 
-def game_selection(ais):
-    # UI to select a game to play; two people, player vs AI, AI vs AI, or a game replay (input a string for that)
-    pass
+def display_text(screen,txt,location,colour=(0,0,0)):
+    text = font.render(txt, True, colour)
+    text_width = text.get_rect().width
+    screen.blit(text, (int(location[0] - text_width / 2), location[1]))
 
+def start_pygame_players(root):
+    root.destroy()
+    play_pygame_players()
+
+
+def get_ai_by_name(name):
+    for ai in game.ai_classes:
+        if name == ai.name:
+            return ai
+
+
+def start_pygame_1ai(root,ai):
+    root.destroy()
+    play_pygame_1ai(get_ai_by_name(ai))
+
+
+def start_pygame_ai(root,ai1,ai2):
+    root.destroy()
+    play_pygame_ai(get_ai_by_name(ai1),get_ai_by_name(ai2))
+
+
+def start_pygame_replay(root,string):
+    root.destroy()
+    string = string[1:len(string)-1].split(",")
+    for i in range(0,len(string)):
+        string[i] = int(string[i])
+    replay_pygame(string)
+
+def game_selection():
+    # UI to select a game to play; two people, player vs AI, AI vs AI, or a game replay (input a string for that)
+    # PvP, PvE, EvE, Replay
+    root = tk.Tk()
+    frame = tk.Frame(root)
+    frame.pack()
+    pvp = tk.Button(frame,text="PvP",command=lambda: start_pygame_players(root))
+    pve = tk.Button(frame,text="PvE",command=lambda: start_pygame_1ai(root,sd.askstring("AI Selector","Enter AI Name")))
+    eve = tk.Button(frame,text="EvE",command=lambda: start_pygame_ai(root,sd.askstring("AI Selector","Enter 1st AI"),sd.askstring("AI Selector","Enter 2nd AI")))
+    rep = tk.Button(frame,text="Replay",command=lambda:start_pygame_replay(root,sd.askstring("Replay","Input Replay")))
+    pvp.pack(side=tk.LEFT)
+    pve.pack(side=tk.LEFT)
+    eve.pack(side=tk.LEFT)
+    rep.pack(side=tk.LEFT)
+    root.mainloop()
+
+
+game_selection()
 
 # open('output.json','w').write(json.dumps(do_tournament(game.ai_classes)))
 # game_json = json.loads(open('output.json','r').read())
