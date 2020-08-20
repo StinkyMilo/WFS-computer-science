@@ -111,6 +111,15 @@ def in_row(board,team,max_val=4):
     return min(max_num,max_val)
 
 
+def win_conditions(board,team,win_num=4):
+    count = 0
+    for i in range(0,BOARD_SIZE[0]):
+        next_board, _ = make_move(board,i,team)
+        if check_game_end(next_board) == team:
+            count+=1
+    return count
+
+
 def check_game_end(board):
     # Returns the winner if there is one, 0 for a tie, -1 otherwise
     for i in range(1,3):
