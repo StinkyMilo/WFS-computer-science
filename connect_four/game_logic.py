@@ -111,7 +111,7 @@ def in_row(board,team,max_val=4):
     return min(max_num,max_val)
 
 
-def win_conditions(board,team,win_num=4):
+def win_conditions(board,team):
     count = 0
     for i in range(0,BOARD_SIZE[0]):
         next_board, _ = make_move(board,i,team)
