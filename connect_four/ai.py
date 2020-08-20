@@ -142,6 +142,90 @@ class Sweeper(AI):
 
 game.ai_classes.append(Sweeper)
 
+class Hierarchy(AI):
+    # Change "Template" to your AI's name
+    name = "Hierarchy"
+
+    def __init__(self,team):
+        super().__init__(team)
+        self.hierarchy = [self.win,self.block_win,self.make_trap,self.block_trap,self.threaten_win,self.stop_threaten,self.increase_row,self.stop_increase_row]
+        self.other_team = 2 if self.team==1 else 1
+
+    def win(self,board,team=-1):
+        if team==-1:
+            team=self.team
+        wcons = game.win_conditions(board,team)
+        if len(wcons)==0:
+            return -1
+        return wcons[randint(0,len(wcons)-1)]
+
+    def block_win(self,board):
+        return self.win(board,self.other_team)
+
+    def make_trap(self,board,team=-1):
+        if team==-1:
+            team=self.team
+        boards = game.next_boards(board,team)
+        for i in range(0,len(boards)):
+            if len(game.win_conditions(boards[i],team))>=2:
+                return i
+        return -1
+
+    def block_trap(self,board):
+        return self.make_trap(board,team=self.other_team)
+
+    def threaten_win(self,board,team=-1):
+        if team==-1:
+            team=self.team
+        other_team = 1 if team==2 else 2
+        boards = game.next_boards(board,team)
+        moves = []
+        for i in range(0,len(boards)):
+            if len(game.win_conditions(boards[i],other_team))>0:
+                continue
+            conditions = len(game.win_conditions(boards[i],team))
+            if conditions>0:
+                moves.append(i)
+        if len(moves)==0:
+            return -1
+        return moves[randint(0,len(moves)-1)]
+
+    def stop_threaten(self,board):
+        return self.threaten_win(board,self.other_team)
+
+    def increase_row(self,board,team=-1):
+        if team==-1:
+            team=self.team
+        boards = game.next_boards(board,team)
+        current_score = game.in_row(board,team)
+        moves=[]
+        for i in range(0,len(boards)):
+            if game.in_row(boards[i],team)>current_score:
+                moves.append(i)
+        if len(moves)==0:
+            return -1
+        return moves[randint(0,len(moves)-1)]
+
+    def stop_increase_row(self,board):
+        return self.increase_row(board,self.other_team)
+
+    def make_move(self,board):
+        for move in self.hierarchy:
+            do_move = move(board)
+            if do_move != -1 and game.is_valid_move(board,do_move):
+                return do_move
+        # Choose random valid move if no choices apply
+        valid_moves = []
+        for i in range(0, game.BOARD_SIZE[0]):
+            if game.get_y_of(board, i) != -1:
+                valid_moves.append(i)
+        return valid_moves[randint(0, len(valid_moves) - 1)]
+
+
+# Change "Template" to your AI's name
+game.ai_classes.append(Hierarchy)
+
+
 # Here's what you edit
 class Template(AI):
     # Change "Template" to your AI's name

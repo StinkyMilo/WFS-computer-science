@@ -134,3 +134,9 @@ def check_game_end(board):
         if not is_tie:
             break
     return 0 if is_tie else -1
+
+def next_boards(board,team):
+    boards = []
+    for i in range(0,7):
+        boards.append(make_move(board,i,team)[0])
+    return boards
