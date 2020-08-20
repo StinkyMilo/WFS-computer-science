@@ -112,12 +112,12 @@ def in_row(board,team,max_val=4):
 
 
 def win_conditions(board,team):
-    count = 0
+    winning_moves = []
     for i in range(0,BOARD_SIZE[0]):
         next_board, _ = make_move(board,i,team)
         if check_game_end(next_board) == team:
-            count+=1
-    return count
+            winning_moves.append(i)
+    return winning_moves
 
 
 def check_game_end(board):
