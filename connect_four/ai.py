@@ -53,9 +53,9 @@ class Minimax(AI):
             return board
         win = game.check_game_end(board)
         if win == self.team:
-            loss = -100 + game.pieces_on_board(board)
+            loss = -1000 + game.pieces_on_board(board)
         elif win == self.other_team:
-            loss = 100 - game.pieces_on_board(board)
+            loss = 1000 - game.pieces_on_board(board)
         else:
             loss = game.in_row(board, self.other_team) - 0.2*game.in_row(board,self.team)
         return loss
@@ -130,13 +130,15 @@ class Sweeper(AI):
 
     def make_move(self,board):
         # This is where your logic will go. This default AI will always go in the leftmost column.
+        if self.location == 0:
+            self.direction=1
+        elif self.location==6:
+            self.direction=-1
         self.location+=self.direction
         if game.check_game_end(board) != -1:
             return 0
         while game.get_y_of(board,self.location) == -1:
             self.location+=self.direction
-        if self.location == 0 or self.location == 6:
-            self.direction*=-1
         return self.location
 
 

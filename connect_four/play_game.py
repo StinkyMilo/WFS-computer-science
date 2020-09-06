@@ -529,9 +529,7 @@ def game_selection():
     root.mainloop()
 
 
-game_selection()
-
 # open('output.json','w').write(json.dumps(do_tournament(game.ai_classes)))
 # game_json = json.loads(open('output.json','r').read())
-# replay_pygame(game_json["Random"]["matches"]["Random"]["replays"][0]["moves"])
-# display_tournament_results(json.loads(open('output.json','r').read()))
+# export_tournament_results(json.loads(open('output.json','r').read()))
+game_selection()
