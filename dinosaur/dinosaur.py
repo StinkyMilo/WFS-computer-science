@@ -4,7 +4,7 @@ top_left_pos = (350,256+295)
 bottom_right_pos = (500,256+295+70)
 region_size = (bottom_right_pos[0]-top_left_pos[0],bottom_right_pos[1]-top_left_pos[1])
 # Black pixel (326, 664)
-jump_pixel = (50,69)
+jump_pixel = (70,69)
 duck_pixel = (50,0)
 interval = 4
 white = (255,255,255)
